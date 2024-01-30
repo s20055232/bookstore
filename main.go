@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -9,17 +10,26 @@ import (
 	"github.com/s20055232/bookstore/models"
 )
 
+// Use a struct to consolidate all dependencies in one location.
+type Env struct {
+	db *sql.DB
+}
+
 func main() {
-	err := models.InitDB("postgres://postgres:pass@localhost/bookstore?sslmode=disable")
+	db, err := sql.Open("postgres", "postgres://postgres:pass@localhost/bookstore?sslmode=disable")
 	if err != nil {
 		log.Fatal(err)
 	}
-	http.HandleFunc("/books", booksIndex)
+	// Set the connection pool into Env struct
+	env := &Env{db: db}
+	http.HandleFunc("/books", env.booksIndex)
 	http.ListenAndServe(":3000", nil)
 }
 
-func booksIndex(w http.ResponseWriter, r *http.Request) {
-	bks, err := models.AllBooks()
+// Define the handler function within the 'Env' struct
+func (env *Env) booksIndex(w http.ResponseWriter, r *http.Request) {
+	// Use Dependency injection here.
+	bks, err := models.AllBooks(env.db)
 	if err != nil {
 		log.Print(err)
 		http.Error(w, http.StatusText(500), 500)
