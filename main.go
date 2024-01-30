@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -11,8 +10,7 @@ import (
 )
 
 func main() {
-	var err error
-	models.DB, err = sql.Open("postgres", "postgres://postgres:pass@localhost/bookstore?sslmode=disable")
+	err := models.InitDB("postgres://postgres:pass@localhost/bookstore?sslmode=disable")
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -1,8 +1,12 @@
 package models
 
-import "database/sql"
+import (
+	"database/sql"
+	"log"
+)
 
-var DB *sql.DB
+// Turn it into lowercase bacause we don't need to export it.
+var db *sql.DB
 
 type Book struct {
 	Isbn   string
@@ -11,8 +15,17 @@ type Book struct {
 	Price  float32
 }
 
+func InitDB(dataSourceName string) error {
+	var err error
+	db, err = sql.Open("postgres", "postgres://postgres:pass@localhost/bookstore?sslmode=disable")
+	if err != nil {
+		log.Fatal(err)
+	}
+	return db.Ping()
+}
+
 func AllBooks() ([]Book, error) {
-	rows, err := DB.Query(`SELECT * FROM books`)
+	rows, err := db.Query(`SELECT * FROM books`)
 	if err != nil {
 		return nil, err
 	}
