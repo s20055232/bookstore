@@ -12,7 +12,7 @@ import (
 
 // Use a struct to consolidate all dependencies in one location.
 type Env struct {
-	db *sql.DB
+	books models.BookModel
 }
 
 func main() {
@@ -21,23 +21,21 @@ func main() {
 		log.Fatal(err)
 	}
 	// Set the connection pool into Env struct
-	env := &Env{db: db}
+	env := &Env{books: models.BookModel{DB: db}}
 	// Use dependency injection here
-	http.HandleFunc("/books", booksIndex(env))
+	http.HandleFunc("/books", env.booksIndex)
 	http.ListenAndServe(":3000", nil)
 }
 
-func booksIndex(env *Env) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		// Use Dependency injection here.
-		bks, err := models.AllBooks(env.db)
-		if err != nil {
-			log.Print(err)
-			http.Error(w, http.StatusText(500), 500)
-			return
-		}
-		for _, bk := range bks {
-			fmt.Fprintf(w, "%s, %s, %s, £%.2f\n", bk.Isbn, bk.Title, bk.Author, bk.Price)
-		}
+func (env *Env) booksIndex(w http.ResponseWriter, r *http.Request) {
+	// Use Dependency injection here.
+	bks, err := env.books.All()
+	if err != nil {
+		log.Print(err)
+		http.Error(w, http.StatusText(500), 500)
+		return
+	}
+	for _, bk := range bks {
+		fmt.Fprintf(w, "%s, %s, %s, £%.2f\n", bk.Isbn, bk.Title, bk.Author, bk.Price)
 	}
 }

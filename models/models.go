@@ -11,8 +11,14 @@ type Book struct {
 	Price  float32
 }
 
-func AllBooks(db *sql.DB) ([]Book, error) {
-	rows, err := db.Query(`SELECT * FROM books`)
+// Create a custom BookModel type which wraps the sql.DB connection pool.
+type BookModel struct {
+	DB *sql.DB
+}
+
+// Use a method on the custom BookModel type to run the SQL query.
+func (m BookModel) All() ([]Book, error) {
+	rows, err := m.DB.Query(`SELECT * FROM books`)
 	if err != nil {
 		return nil, err
 	}
