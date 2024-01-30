@@ -12,7 +12,12 @@ import (
 
 // Use a struct to consolidate all dependencies in one location.
 type Env struct {
-	books models.BookModel
+	// Replace the reference to models.BookModel with an interface
+	// describing its methods instead. All the other code remains exactly
+	// the same.
+	books interface {
+		All() ([]models.Book, error)
+	}
 }
 
 func main() {
